@@ -1,10 +1,11 @@
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
+use std::sync::mpsc::Sender;
 
 #[derive(Debug)]
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Message>,
+    sender: Option<mpsc::Sender<Message>>,
 }
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
@@ -30,7 +31,7 @@ impl ThreadPool {
             for id in 0..size {
                 workers.push(Worker::new(id, Arc::clone(&receiver)));
             }
-            Ok(ThreadPool { workers, sender })
+            Ok(ThreadPool { workers, sender: Some(sender) })
         }
     }
 
@@ -40,15 +41,24 @@ impl ThreadPool {
     {
         let job = Box::new(f);
 
-        self.sender.send(Message::NewJob(job)).unwrap();
+        self.sender.as_ref().unwrap().send(Message::NewJob(job)).unwrap();
     }
 
     pub fn manual_drop(&mut self) {
-        println!("Sending terminate message to all workers.");
-
-        for _ in &mut self.workers {
-            self.sender.send(Message::Terminate).unwrap();
+        match self.sender.as_ref() {
+            None => {
+                println!("No Need to Terminate");
+                return;
+            }
+            Some(sender) => {
+                // this will only execute once.
+                println!("Sending terminate message to all workers.");
+                for _ in &mut self.workers {
+                    sender.send(Message::Terminate).unwrap();
+                }
+            }
         }
+
 
         println!("Shutting down all workers.");
 
@@ -59,37 +69,9 @@ impl ThreadPool {
                 thread.join().unwrap();
             }
         }
+        self.sender = None;
     }
 }
-
-// impl Drop for ThreadPool {
-//     // fn drop(&mut self) {
-//     //     for worker in &mut self.workers {
-//     //         println!("Shutting down worker {}", worker.id);
-//     //
-//     //         if let Some(thread) = worker.thread.take() {
-//     //             thread.join().unwrap();
-//     //         }
-//     //     }
-//     // }
-//     fn drop(&mut self) {
-//         println!("Sending terminate message to all workers.");
-//
-//         for _ in &mut self.workers {
-//             self.sender.send(Message::Terminate).unwrap();
-//         }
-//
-//         println!("Shutting down all workers.");
-//
-//         for worker in &mut self.workers {
-//             println!("Shutting down worker {}", worker.id);
-//
-//             if let Some(thread) = worker.thread.take() {
-//                 thread.join().unwrap();
-//             }
-//         }
-//     }
-// }
 
 #[derive(Debug)]
 struct Worker {
@@ -126,4 +108,16 @@ impl Worker {
 enum Message {
     NewJob(Job),
     Terminate,
+}
+
+enum HttpRequestMethod {
+    GET,
+    POST,
+    PUT,
+}
+
+struct HttpRequest {
+    method: HttpRequestMethod,
+    path: String,
+
 }
