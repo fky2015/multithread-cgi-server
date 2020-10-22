@@ -10,6 +10,8 @@ use std::process::exit;
 use std::thread::spawn;
 use std::sync::mpsc::RecvError;
 use std::borrow::Borrow;
+use std::fs::OpenOptions;
+use std::io::prelude::*;
 
 enum LoggingSignal {
     Logging(String),
@@ -19,12 +21,15 @@ enum LoggingSignal {
 fn main() -> Result<(), Box<dyn Error>> {
     dotenv::dotenv().ok();
 
+
     let host = env::var("HOST").unwrap_or_else(|_| "127.0.0.1".into());
-    let port = env::var("HOST").unwrap_or_else(|_| "8000".into());
+    let port = env::var("PORT").unwrap_or_else(|_| "8000".into());
+    let logfile = env::var("LOG_FILE").unwrap_or_else(|_| "log/logfile.txt".into());
     let listener = TcpListener::bind(format!("{}:{}", host, port)).unwrap();
-    let pool = Arc::new(Mutex::new(ThreadPool::new(4)?));
+    let pool = Arc::new(Mutex::new(ThreadPool::new(10)?));
 
     let pool_handler = pool.clone();
+
 
     // (Almost) Gracefully exit.
 
@@ -32,12 +37,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (log_sender, log_receiver) = mpsc::channel();
 
     let t = spawn(move || {
+        let mut file = OpenOptions::new()
+            .create(true)
+            .write(true).append(true).open(logfile).unwrap();
+
         loop {
             println!("logger waiting");
 
             match log_receiver.recv() {
                 Ok(LoggingSignal::Logging(message)) => {
                     println!("{}", message);
+                    file.write(message.as_bytes());;
                 }
                 Ok(LoggingSignal::Shutdown) => {
                     println!("Logger exits, close logfile handler!");
@@ -108,7 +118,7 @@ fn handle_connection(mut stream: TcpStream) -> String {
 
     // TODO: logging
     // println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
-    format!("this is a log {}", status_line)
+    format!("this is a log {}", "hahahaha")
 }
 
 // fn parse_http_request(text: String) ->
