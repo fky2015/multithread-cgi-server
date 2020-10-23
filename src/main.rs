@@ -1,5 +1,4 @@
 use dotenv;
-use multithread_cgi_server::ThreadPool;
 use std::env;
 use std::error::Error;
 use std::io::prelude::*;
@@ -13,6 +12,9 @@ use std::borrow::Borrow;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
+mod parser;
+mod thread_pool;
+
 enum LoggingSignal {
     Logging(String),
     Shutdown,
@@ -21,12 +23,11 @@ enum LoggingSignal {
 fn main() -> Result<(), Box<dyn Error>> {
     dotenv::dotenv().ok();
 
-
     let host = env::var("HOST").unwrap_or_else(|_| "127.0.0.1".into());
     let port = env::var("PORT").unwrap_or_else(|_| "8000".into());
     let logfile = env::var("LOG_FILE").unwrap_or_else(|_| "log/logfile.txt".into());
     let listener = TcpListener::bind(format!("{}:{}", host, port)).unwrap();
-    let pool = Arc::new(Mutex::new(ThreadPool::new(10)?));
+    let pool = Arc::new(Mutex::new(thread_pool::ThreadPool::new(10)?));
 
     let pool_handler = pool.clone();
 
@@ -102,6 +103,8 @@ fn handle_connection(mut stream: TcpStream) -> String {
     stream.read(&mut buffer).unwrap();
 
     // TODO: parse buffer to get file
+    let b = parser::parser(String::from_utf8_lossy(&buffer).to_string());
+    println!("{:?}", b);
 
     // TODO: handle read file or 404
 

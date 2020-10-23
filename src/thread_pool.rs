@@ -110,14 +110,3 @@ enum Message {
     Terminate,
 }
 
-enum HttpRequestMethod {
-    GET,
-    POST,
-    PUT,
-}
-
-struct HttpRequest {
-    method: HttpRequestMethod,
-    path: String,
-
-}
