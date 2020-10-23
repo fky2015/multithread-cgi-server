@@ -2,6 +2,9 @@ use std::collections::HashMap;
 use std::process::Command;
 use std::env;
 
+// call this function with path and key-values
+// return HTML and ExitStatus of cgi-bin
+// See tests for example
 pub fn cgi_caller(
     path: &String,
     key_values: HashMap<String, String>,
