@@ -1,3 +1,5 @@
+mod cgi;
+
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::sync::mpsc::Sender;
