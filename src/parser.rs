@@ -12,6 +12,7 @@ pub struct Pkg {
 }
 
 pub fn parser (s : String) -> Pkg {
+
     let le = s.len();
     let su = s.as_bytes();
     let mut headers = [httparse::EMPTY_HEADER; 16];
@@ -31,6 +32,5 @@ pub fn parser (s : String) -> Pkg {
             length: le,
             iscgi: iscgi
         }
-
 }
 
