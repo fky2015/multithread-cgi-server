@@ -14,9 +14,12 @@ pub enum CgiCallError {
     RuntimeError,
 }
 
-// call this function with path and key-values
-// return HTML and ExitStatus of cgi-bin
-// See tests for example
+/*
+ Function for get,
+ with cgi bin path and query string,
+ cgi path must be a relative path,
+ see get_test in the bottom for example
+ */
 pub fn cgi_caller_get(
     cgi_path: &str,
     query_string: &str,
@@ -27,7 +30,7 @@ pub fn cgi_caller_get(
     }
 
     let output = Command::new(real_path.to_str().unwrap())
-        .env("METHOD", "GET")
+        .env("REQUEST_METHOD", "GET")
         .env("QUERY_STRING", query_string)
         .output().unwrap();
 
@@ -39,10 +42,16 @@ pub fn cgi_caller_get(
         false => Err(RuntimeError),
     }
 }
+/*
+ Function for post,
+ with cgi bin path, content length, conteng type and request body as a str
+ cgi path must be a relative path,
+ see post_test in the bottom for example
+ */
 
 pub fn cgi_caller_post(
     cgi_path: &str,
-    content_lenght: &str,
+    content_length: &str,
     content_type: &str,
     body_string: &str,
 ) -> Result<String, CgiCallError> {
@@ -54,8 +63,8 @@ pub fn cgi_caller_post(
     let mut child = Command::new(real_path.to_str().unwrap())
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .env("METHOD", "POST")
-        .env("CONTENT_LENGTH", content_lenght)
+        .env("REQUEST_METHOD", "POST")
+        .env("CONTENT_LENGTH", content_length)
         .env("CONTENT_TYPE", content_type)
         .spawn().unwrap();
 
@@ -66,13 +75,9 @@ pub fn cgi_caller_post(
 
     let output = child.wait_with_output().unwrap();
     let re = String::from_utf8(output.stdout).unwrap();
-    println!("{}",String::from_utf8(output.stderr).unwrap());
-    println!("{}",re);
-
 
     match output.status.success() {
         true => {
-
             Ok(re)
         }
         false => Err(RuntimeError),
@@ -110,7 +115,7 @@ mod cgi_tests {
 
     #[test]
     fn get_test3() {
-        let query_string = "value=123&val=234";
+        let query_string = "xxx";
         let path = "cgi-bin/calculator.py";
         let result = cgi_caller_get(path, query_string).err().unwrap();
         assert_eq!(CgiCallError::RuntimeError, result);
@@ -118,16 +123,51 @@ mod cgi_tests {
 
     #[test]
     fn post_test1() {
-        let query_string = "value=123&val=234";
+        let query_string = "value1=123&value2=234";
         let path = "cgi-bin/calculator.py";
         let content_length = query_string.len().to_string();
-
         let result = cgi_caller_post(path,
                                      content_length.as_str(),
                                      "application/x-www-form-urlencoded",
                                      query_string).unwrap();
         assert_eq!("Content-type:text/html\n\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>两数之和与之积</title>\n</head>\n<body>\n<h2>两数之和: 357</h2>\n<h2>两数之积: 28782</h2>\n</body>\n</html>\n".to_string(),
                    result);
+    }
+
+    #[test]
+    fn post_test2() {
+        let query_string = "value1=123&value2=234";
+        let path = "cgi-bin/not-exists";
+        let content_length = query_string.len().to_string();
+        let result = cgi_caller_post(path,
+                                     content_length.as_str(),
+                                     "application/x-www-form-urlencoded",
+                                     query_string).err().unwrap();
+        assert_eq!(CgiCallError::FileNotExists, result);
+    }
+
+    #[test]
+    fn post_test3() {
+        let query_string = "xxx";
+        let path = "cgi-bin/calculator.py";
+        let content_length = query_string.len().to_string();
+        let result = cgi_caller_post(path,
+                                     content_length.as_str(),
+                                     "application/x-www-form-urlencoded",
+                                     query_string).err().unwrap();
+        assert_eq!(CgiCallError::RuntimeError, result);
+    }
+
+    #[test]
+    fn post_test4() {
+        let query_string = "value1=123&value2=234";
+        let path = "cgi-bin/calculator.py";
+        let content_length = query_string.len().to_string();
+        let result = cgi_caller_post(path,
+                                     content_length.as_str(),
+                                     "WhatFType",
+                                     query_string).err().unwrap();
+        assert_eq!(CgiCallError::RuntimeError, result);
     }
 }
 
