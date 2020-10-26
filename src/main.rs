@@ -14,6 +14,7 @@ use std::io::prelude::*;
 
 mod parser;
 mod thread_pool;
+mod filereader;
 
 enum LoggingSignal {
     Logging(String),
@@ -107,6 +108,7 @@ fn handle_connection(mut stream: TcpStream) -> String {
     println!("{:?}", b);
 
     // TODO: handle read file or 404
+    
 
     // or not found
     let status_line = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
