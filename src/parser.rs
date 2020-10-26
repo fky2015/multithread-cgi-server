@@ -19,7 +19,8 @@ pub struct Pkg {
     pub iscgi: bool,
 }
 
-pub fn parser(s: String) -> Pkg {
+pub fn parser(s: &[u8]) -> Pkg {
+    println!("{:?}", s);
     //    let le = s.len();
     let mut host = String::new();
     let mut user = String::new();
@@ -30,7 +31,8 @@ pub fn parser(s: String) -> Pkg {
     let mut body_string = String::new();
     let mut fore_string = String::new();
 
-    let mut splitreq = s.split("\r\n\r\n");
+    let splitreq = String::from_utf8(s.to_vec()).unwrap();
+    let splitreq = splitreq.trim_matches(char::from(0)).split("\r\n\r\n");
     let mut rpart = 0;
     for sr in splitreq {
         if rpart == 0 {
@@ -41,12 +43,9 @@ pub fn parser(s: String) -> Pkg {
         rpart = rpart + 1;
     }
 
-    //    content_length = (&mut body_string).len().to_string();
-
-    let su = &fore_string.as_bytes();
     let mut headers = [httparse::EMPTY_HEADER; 16];
     let mut req = Request::new(&mut headers[..]);
-    let res = req.parse(su).unwrap();
+    let res = req.parse(s).unwrap();
 
     let mut iscgi = false;
     let parturl: String = req.path.unwrap().chars().take(8).collect();
@@ -73,10 +72,8 @@ pub fn parser(s: String) -> Pkg {
         query_string = body_string.clone();
     }
 
-    println!("{:?}", req.headers);
-
     let mut index = 0;
-    while index < 16 {
+    while index < req.headers.len() {
         let i = req.headers[index];
         if i.name.to_string() == "Host" {
             host = String::from_utf8(i.value.to_vec()).unwrap();

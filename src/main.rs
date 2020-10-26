@@ -1,14 +1,11 @@
 use ctrlc;
 use dotenv;
-use std::borrow::Borrow;
 use std::env;
 use std::error::Error;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
-use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::process::exit;
-use std::sync::mpsc::RecvError;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread::spawn;
 
@@ -46,11 +43,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             .unwrap();
 
         loop {
-            println!("logger waiting");
-
             match log_receiver.recv() {
                 Ok(LoggingSignal::Logging(message)) => {
-                    println!("{}", message);
+                    //println!("{}", message);
                     file.write(message.as_bytes());
                 }
                 Ok(LoggingSignal::Shutdown) => {
@@ -107,11 +102,19 @@ fn handle_connection(mut stream: TcpStream) -> String {
     stream.read(&mut buffer).unwrap();
 
     // TODO: parse buffer to get file
-    let b = parser::parser(String::from_utf8_lossy(&buffer).to_string());
-    println!("{:?}", b);
+    let b = parser::parser(&buffer);
 
+
+    println!("{:?}", b);
     let response = if b.iscgi {
-        match cgi::cgi_caller_get(&b.path, &b.query_string) {
+        let result = if b.method == "GET" {
+          cgi::cgi_caller_get(&b.path, &b.query_string) 
+        } else {
+            cgi::cgi_caller_post(&b.path, &b.content_length, &b.content_type, &b.body_string)
+        };
+
+        match result {
+
             Ok(content) => {
                 let status_line = "HTTP/1.1 200 OK";
                 format!("{}\r\n{}", status_line, content)
@@ -121,8 +124,9 @@ fn handle_connection(mut stream: TcpStream) -> String {
                 format!("{}", status_line)
             }
         }
+
     } else {
-        let res = filereader::readfile(b.path);
+        let res = filereader::readfile(b.path.clone());
 
         match res {
             Some(res) => {
@@ -141,9 +145,6 @@ fn handle_connection(mut stream: TcpStream) -> String {
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 
-    // TODO: logging
-    // println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
-    format!("this is a log {}", "hahahaha")
+    let time = chrono::Local::now().to_rfc3339();
+    format!("{} {} {} {} {} {} {}\n", time, b.host, b.method, b.user, b.url, b.path, b.query_string)
 }
-
-// fn parse_http_request(text: String) ->

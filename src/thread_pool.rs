@@ -92,8 +92,6 @@ impl Worker {
 
             match message {
                 Message::NewJob(job) => {
-                    println!("Worker {} got a job; executing.", id);
-
                     job();
                 }
                 Message::Terminate => {
