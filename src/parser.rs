@@ -1,7 +1,10 @@
 use std::convert::TryInto;
+
 extern crate httparse;
+
 use httparse::Request;
 use std::str::FromStr;
+
 
 #[derive(Debug)]
 pub struct Pkg {
@@ -19,7 +22,11 @@ pub struct Pkg {
     pub iscgi: bool,
 }
 
-pub fn parser(s: &[u8]) -> Pkg {
+
+pub fn parser(s: &[u8]) -> Result<Pkg, ()> {
+    if s[0] == 0 {
+        return Err(());
+    }
     let mut host = String::new();
     let mut user = String::new();
     let mut path = String::new();
@@ -43,7 +50,11 @@ pub fn parser(s: &[u8]) -> Pkg {
 
     let mut headers = [httparse::EMPTY_HEADER; 16];
     let mut req = Request::new(&mut headers[..]);
-    let res = req.parse(s).unwrap();
+    match req.parse(s) {
+        Ok(_) => {}
+        Err(err) => println!("err!{:?},s:{:?}", err, s),
+    };
+
 
     let mut iscgi = false;
     let parturl: String = req.path.unwrap().chars().take(8).collect();
@@ -100,7 +111,7 @@ pub fn parser(s: &[u8]) -> Pkg {
         body_string2 = body_string.chars().take(le.try_into().unwrap()).collect();
     }
 
-    Pkg {
+    Ok(Pkg {
         method: method,
         host: host,
         user: user,
@@ -113,7 +124,7 @@ pub fn parser(s: &[u8]) -> Pkg {
         fore_string: fore_string,
         length: le,
         iscgi: iscgi,
-    }
+    })
 }
 
 #[cfg(test)]

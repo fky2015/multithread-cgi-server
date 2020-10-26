@@ -77,7 +77,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         };
         exit(0);
     })
-    .unwrap();
+        .unwrap();
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
@@ -102,40 +102,55 @@ fn handle_connection(mut stream: TcpStream) -> String {
     stream.read(&mut buffer).unwrap();
 
     let b = parser::parser(&buffer);
-    
-    let response = if b.iscgi {
-        let result = if b.method == "GET" {
-            cgi::cgi_caller_get(&b.path, &b.query_string)
+    if b.is_err() {
+        let status_line = "HTTP/1.1 404 Not Found";
+        let response = format!("{}", status_line);
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+        let time = chrono::Local::now().to_rfc3339();
+
+        return format!(
+            "{} {}\n",
+            time,
+            "empty-request"
+        );
+    }
+
+    let b = b.unwrap();
+    let response =
+        if b.iscgi {
+            let result = if b.method == "GET" {
+                cgi::cgi_caller_get(&b.path, &b.query_string)
+            } else {
+                cgi::cgi_caller_post(&b.path, &b.content_length, &b.content_type, &b.body_string)
+            };
+
+            match result {
+                Ok(content) => {
+                    let status_line = "HTTP/1.1 200 OK";
+                    format!("{}\r\n{}", status_line, content)
+                }
+                _ => {
+                    let status_line = "HTTP/1.1 404 Not Found";
+                    format!("{}", status_line)
+                }
+            }
         } else {
-            cgi::cgi_caller_post(&b.path, &b.content_length, &b.content_type, &b.body_string)
+            let res = filereader::readfile(b.path.clone());
+
+            match res {
+                Some(res) => {
+                    let status_line = "HTTP/1.1 200 OK";
+                    let content_type = res.1;
+                    let content = res.0;
+                    format!("{}\r\n{}\r\n\r\n{}", status_line, content_type, content)
+                }
+                _ => {
+                    let status_line = "HTTP/1.1 404 Not Found";
+                    format!("{}", status_line)
+                }
+            }
         };
-
-        match result {
-            Ok(content) => {
-                let status_line = "HTTP/1.1 200 OK";
-                format!("{}\r\n{}", status_line, content)
-            }
-            _ => {
-                let status_line = "HTTP/1.1 404 Not Found";
-                format!("{}", status_line)
-            }
-        }
-    } else {
-        let res = filereader::readfile(b.path.clone());
-
-        match res {
-            Some(res) => {
-                let status_line = "HTTP/1.1 200 OK";
-                let content_type = res.1;
-                let content = res.0;
-                format!("{}\r\n{}\r\n\r\n{}", status_line, content_type, content)
-            }
-            _ => {
-                let status_line = "HTTP/1.1 404 Not Found";
-                format!("{}", status_line)
-            }
-        }
-    };
 
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
