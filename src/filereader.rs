@@ -1,8 +1,8 @@
-use std::fs::File;
+use std::fs::{metadata, File};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
-pub fn readfile(filepath: String) -> (String, String) {
+pub fn readfile(filepath: String) -> Option<(String, String)> {
     let mut content = String::new();
     let mut pathbuf = PathBuf::from("");
     pathbuf.push("static");
@@ -11,11 +11,25 @@ pub fn readfile(filepath: String) -> (String, String) {
         path = &path[1..];
     }
     pathbuf.push(path);
-    let mut pathstr = pathbuf.as_path().display().to_string();
+    let pathstr = pathbuf.as_path().display().to_string();
+
+    match metadata(pathstr) {
+        Ok(f) => {
+            if f.is_dir() {
+                pathbuf.push("index.html")
+            }
+        }
+        _ => {
+            return None;
+        }
+    }
+
+    let pathstr = pathbuf.as_path().display().to_string();
+
     // pathstr = (&pathstr[1..]).to_string();
     // println!("{}", pathstr);
 
-    let tokens:Vec<&str> = filepath.split(".").collect();
+    let tokens: Vec<&str> = filepath.split(".").collect();
     let extender = tokens[tokens.len() - 1];
     let content_type = match extender {
         "html" => "text/html",
@@ -26,38 +40,35 @@ pub fn readfile(filepath: String) -> (String, String) {
         "jpeg" => "image/jpeg",
         "png" => "image/png",
         "ico" => "application/x-ico",
-        _ => "text/html"
-    }.to_string();
-    // println!("content-type : {}", content_type);
+        _ => "text/html",
+    }
+    .to_string();
 
-    let mut file = match File::open(pathstr) {
+    match File::open(pathstr) {
         Ok(mut file) => {
-            println!("ok");
             file.read_to_string(&mut content).unwrap();
-        },
-        Err(_) => {
-            content = "<!DOCTYPE html><html>
-            <head><title>File not found - 404</title></head>
-            <body><h3>Sorry, the file you were looking for was not found - 404</h3></body></html>".to_string();
+            Some((content, content_type))
         }
-    };
-    (content, content_type)
+        Err(_) => None,
+    }
 }
 
-    #[test]
-    fn file_test1() {
-        let res = readfile("/index.html".to_string());
-        println!("{}\n{}\n", res.0, res.1);
-    }
+#[test]
+fn file_index() {
+    let res = readfile("/".to_string());
+}
 
-    #[test]
-    fn file_tes21() {
-        let res = readfile("index.html".to_string());
-        println!("{}\n{}\n", res.0, res.1);
-    }
+#[test]
+fn file_test1() {
+    let res = readfile("/index.html".to_string());
+}
 
-    #[test]
-    fn file_test3() {
-        let res = readfile("index1.html".to_string());
-        println!("{}\n{}\n", res.0, res.1);
-    }
+#[test]
+fn file_tes21() {
+    let res = readfile("index.html".to_string());
+}
+
+#[test]
+fn file_test3() {
+    let res = readfile("index1.html".to_string());
+}

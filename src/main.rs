@@ -1,20 +1,20 @@
+use ctrlc;
 use dotenv;
+use std::borrow::Borrow;
 use std::env;
 use std::error::Error;
-use std::io::prelude::*;
-use std::net::{TcpListener, TcpStream};
-use std::sync::{Arc, Mutex, mpsc};
-use ctrlc;
-use std::process::exit;
-use std::thread::spawn;
-use std::sync::mpsc::RecvError;
-use std::borrow::Borrow;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
+use std::io::prelude::*;
+use std::net::{TcpListener, TcpStream};
+use std::process::exit;
+use std::sync::mpsc::RecvError;
+use std::sync::{mpsc, Arc, Mutex};
+use std::thread::spawn;
 
+mod filereader;
 mod parser;
 mod thread_pool;
-mod filereader;
 
 enum LoggingSignal {
     Logging(String),
@@ -32,16 +32,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let pool_handler = pool.clone();
 
-
     // (Almost) Gracefully exit.
-
 
     let (log_sender, log_receiver) = mpsc::channel();
 
     let t = spawn(move || {
         let mut file = OpenOptions::new()
             .create(true)
-            .write(true).append(true).open(logfile).unwrap();
+            .write(true)
+            .append(true)
+            .open(logfile)
+            .unwrap();
 
         loop {
             println!("logger waiting");
@@ -49,7 +50,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             match log_receiver.recv() {
                 Ok(LoggingSignal::Logging(message)) => {
                     println!("{}", message);
-                    file.write(message.as_bytes());;
+                    file.write(message.as_bytes());
                 }
                 Ok(LoggingSignal::Shutdown) => {
                     println!("Logger exits, close logfile handler!");
@@ -79,7 +80,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         };
         exit(0);
-    }).unwrap();
+    })
+    .unwrap();
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
@@ -106,19 +108,24 @@ fn handle_connection(mut stream: TcpStream) -> String {
     // TODO: parse buffer to get file
     let b = parser::parser(String::from_utf8_lossy(&buffer).to_string());
     println!("{:?}", b);
+    let res = filereader::readfile(b.path);
 
     // TODO: handle read file or 404
-    
 
-    // or not found
-    let status_line = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
+    let response = match res {
+        Some(res) => {
+            let status_line = "HTTP/1.1 200 OK";
+            let content_type = res.1;
+            let content = res.0;
+            format!("{}\r\n{}\r\n\r\n{}", status_line, content_type, content)
+        }
+        _ => {
+            let status_line = "HTTP/1.1 404 Not Found";
+            format!("{}", status_line)
+        }
+    };
 
-    // ok
-    let status_line = "HTTP/1.1 200 OK\r\n\r\n";
-
-    stream
-        .write(format!("{}{}", status_line, "").as_bytes())
-        .unwrap();
+    stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 
     // TODO: logging

@@ -1,4 +1,3 @@
-
 use std::convert::TryInto;
 extern crate httparse;
 use httparse::Request;
@@ -6,23 +5,22 @@ use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct Pkg {
-    pub method : String,
-    pub host : String,
-    pub user : String,
-    pub url : String,
-    pub path : String,
-    pub query_string : String,
-    pub content_length : String,
-    pub content_type : String,
-    pub body_string : String,
+    pub method: String,
+    pub host: String,
+    pub user: String,
+    pub url: String,
+    pub path: String,
+    pub query_string: String,
+    pub content_length: String,
+    pub content_type: String,
+    pub body_string: String,
     pub fore_string: String,
-    pub length : i32,
-    pub iscgi : bool
+    pub length: i32,
+    pub iscgi: bool,
 }
 
-pub fn parser (s : String) -> Pkg {
-
-//    let le = s.len();
+pub fn parser(s: String) -> Pkg {
+    //    let le = s.len();
     let mut host = String::new();
     let mut user = String::new();
     let mut path = String::new();
@@ -37,14 +35,13 @@ pub fn parser (s : String) -> Pkg {
     for sr in splitreq {
         if rpart == 0 {
             fore_string = sr.to_string();
-        }
-        else {
+        } else {
             body_string = sr.to_string();
         }
         rpart = rpart + 1;
-    }  
+    }
 
-//    content_length = (&mut body_string).len().to_string();
+    //    content_length = (&mut body_string).len().to_string();
 
     let su = &fore_string.as_bytes();
     let mut headers = [httparse::EMPTY_HEADER; 16];
@@ -59,22 +56,19 @@ pub fn parser (s : String) -> Pkg {
 
     let method = req.method.unwrap().to_string();
     let mut url = req.path.unwrap().to_string();
-    let mut spliturl = url.split("?"); 
+    let mut spliturl = url.split("?");
     let mut part = 0;
-
 
     if method == "GET" {
         for surl in spliturl {
             if part == 0 {
                 path = surl.to_string().chars().skip(1).collect();
-            }
-            else {
+            } else {
                 query_string = surl.to_string();
             }
             part = part + 1;
         }
-    }
-    else if method == "POST" {
+    } else if method == "POST" {
         path = url.chars().skip(1).collect();
         query_string = body_string.clone();
     }
@@ -103,8 +97,8 @@ pub fn parser (s : String) -> Pkg {
         index = index + 1;
     }
 
-   let le = i32::from_str(&content_length).unwrap_or(0);
- //   let le = from_str::<int>(content_length);
+    let le = i32::from_str(&content_length).unwrap_or(0);
+    //   let le = from_str::<int>(content_length);
     let mut body_string2 = String::new();
 
     if le > 0 {
@@ -112,20 +106,19 @@ pub fn parser (s : String) -> Pkg {
     }
 
     Pkg {
-            method: method,
-            host: host,
-            user: user,
-            url: url,
-            path: path,
-            query_string: query_string,
-            content_length: content_length,
-            content_type: content_type,
-            body_string: body_string2,
-            fore_string: fore_string,
-            length: le,
-            iscgi: iscgi
-
-        }
+        method: method,
+        host: host,
+        user: user,
+        url: url,
+        path: path,
+        query_string: query_string,
+        content_length: content_length,
+        content_type: content_type,
+        body_string: body_string2,
+        fore_string: fore_string,
+        length: le,
+        iscgi: iscgi,
+    }
 }
 
 #[cfg(test)]
@@ -157,6 +150,4 @@ mod parser_tests {
         assert_eq!(content_length, pkgp.content_length);
         assert_eq!(body_string, pkgp.body_string);
     }
-
-
 }

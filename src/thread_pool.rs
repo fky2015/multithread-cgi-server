@@ -1,6 +1,6 @@
+use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
-use std::sync::mpsc::Sender;
 
 #[derive(Debug)]
 pub struct ThreadPool {
@@ -31,17 +31,24 @@ impl ThreadPool {
             for id in 0..size {
                 workers.push(Worker::new(id, Arc::clone(&receiver)));
             }
-            Ok(ThreadPool { workers, sender: Some(sender) })
+            Ok(ThreadPool {
+                workers,
+                sender: Some(sender),
+            })
         }
     }
 
     pub fn execute<F>(&self, f: F)
-        where
-            F: FnOnce() + Send + 'static,
+    where
+        F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
 
-        self.sender.as_ref().unwrap().send(Message::NewJob(job)).unwrap();
+        self.sender
+            .as_ref()
+            .unwrap()
+            .send(Message::NewJob(job))
+            .unwrap();
     }
 
     pub fn manual_drop(&mut self) {
@@ -58,7 +65,6 @@ impl ThreadPool {
                 }
             }
         }
-
 
         println!("Shutting down all workers.");
 
@@ -109,4 +115,3 @@ enum Message {
     NewJob(Job),
     Terminate,
 }
-
