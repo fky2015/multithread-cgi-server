@@ -51,7 +51,11 @@ pub fn parser(s: &[u8]) -> Result<Pkg, ()> {
     let mut headers = [httparse::EMPTY_HEADER; 16];
     let mut req = Request::new(&mut headers[..]);
     match req.parse(s) {
-        Ok(_) => {}
+        Ok(_) => {
+            if cfg!(feature = "debug") {
+                println!("{:?}", req);
+            }
+        }
         Err(err) => println!("err!{:?},s:{:?}", err, s),
     };
 

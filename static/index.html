@@ -1,12 +1,258 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="test.css"> 
-</head>
-<body>
+  <head>
+    <title>Tailwind CSS Example Plugins</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  </head>
+  <body class="font-sans text-black">
+    <div id="object-fit" class="bg-white py-8">
+      <div class="container mx-auto px-8">
+        <h2 class="text-2xl font-bold text-black mb-2">Object-Fit Utilities</h2>
+        <p class="mb-6">
+          <a href="https://github.com/tailwindcss/plugin-examples#object-fit-utilities" class="text-sm text-blue no-underline hover:underline">Learn more</a>
+          <span class="mx-1">&middot;</span>
+          <a href="https://github.com/tailwindcss/plugin-examples/blob/master/plugins/object-fit/index.js" class="text-sm text-blue no-underline hover:underline">View plugin source</a>
+        </p>
 
-  <h1>Hello World</h1>
-</body>
+        <div class="flex flex-wrap -mx-4 -mb-4">
+          <div class="px-4 mb-4">
+            <code class="block mb-2 text-grey-dark">.object-contain</code>
+            <div class="h-32 w-64 bg-grey-lighter">
+              <img class="h-full w-full object-contain" src="https://user-images.githubusercontent.com/4323180/37476373-5f8b7524-284b-11e8-8bc3-8dcb98dd2685.png" alt="">
+            </div>
+          </div>
+          <div class="px-4 mb-4">
+            <code class="block mb-2 text-grey-dark">.object-cover</code>
+            <div class="h-32 w-64 bg-grey-lighter">
+              <img class="h-full w-full object-cover" src="https://user-images.githubusercontent.com/4323180/37476373-5f8b7524-284b-11e8-8bc3-8dcb98dd2685.png" alt="">
+            </div>
+          </div>
+          <div class="px-4 mb-4">
+            <code class="block mb-2 text-grey-dark">.object-fill</code>
+            <div class="h-32 w-64 bg-grey-lighter">
+              <img class="h-full w-full object-fill" src="https://user-images.githubusercontent.com/4323180/37476373-5f8b7524-284b-11e8-8bc3-8dcb98dd2685.png" alt="">
+            </div>
+          </div>
+          <div class="px-4 mb-4">
+            <code class="block mb-2 text-grey-dark">.object-none</code>
+            <div class="h-32 w-64 bg-grey-lighter">
+              <img class="h-full w-full object-none" src="https://user-images.githubusercontent.com/4323180/37476373-5f8b7524-284b-11e8-8bc3-8dcb98dd2685.png" alt="">
+            </div>
+          </div>
+          <div class="px-4 mb-4">
+            <code class="block mb-2 text-grey-dark">.object-scale</code>
+            <div class="h-32 w-64 bg-grey-lighter">
+              <img class="h-full w-full object-scale" src="https://user-images.githubusercontent.com/4323180/37476373-5f8b7524-284b-11e8-8bc3-8dcb98dd2685.png" alt="">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="simple-buttons" class="bg-grey-lighter py-8">
+      <div class="container mx-auto px-8">
+        <h2 class="text-2xl font-bold text-black mb-2">Simple Buttons</h2>
+        <p class="mb-6">
+          <a href="https://github.com/tailwindcss/plugin-examples#simple-buttons" class="text-sm text-blue no-underline hover:underline">Learn more</a>
+          <span class="mx-1">&middot;</span>
+          <a href="https://github.com/tailwindcss/plugin-examples/blob/master/plugins/simple-buttons/index.js" class="text-sm text-blue no-underline hover:underline">View plugin source</a>
+        </p>
+        <div class="mb-6">
+          <h3 class="text-lg text-grey-darker font-semibold mb-4">Colors</h3>
+          <div class="flex flex-wrap">
+            <button type="button" class="w-24 btn btn-white mr-2 mb-2">White</button>
+            <button type="button" class="w-24 btn btn-grey mr-2 mb-2">Grey</button>
+            <button type="button" class="w-24 btn btn-black mr-2 mb-2">Black</button>
+            <button type="button" class="w-24 btn btn-red mr-2 mb-2">Red</button>
+            <button type="button" class="w-24 btn btn-orange mr-2 mb-2">Orange</button>
+            <button type="button" class="w-24 btn btn-yellow mr-2 mb-2">Yellow</button>
+            <button type="button" class="w-24 btn btn-green mr-2 mb-2">Green</button>
+            <button type="button" class="w-24 btn btn-teal mr-2 mb-2">Teal</button>
+            <button type="button" class="w-24 btn btn-blue mr-2 mb-2">Blue</button>
+            <button type="button" class="w-24 btn btn-indigo mr-2 mb-2">Indigo</button>
+            <button type="button" class="w-24 btn btn-purple mr-2 mb-2">Purple</button>
+            <button type="button" class="w-24 btn btn-pink mr-2 mb-2">Pink</button>
+          </div>
+        </div>
+        <div class="mb-6">
+          <h3 class="text-lg text-grey-darker font-semibold mb-4">Sizes</h3>
+          <div>
+            <button type="button" class="btn btn-sm btn-blue mr-2">Small</button>
+            <button type="button" class="btn btn-blue mr-2">Default</button>
+            <button type="button" class="btn btn-lg btn-blue mr-2">Large</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="css-grid" class="bg-white py-8">
+      <div class="container mx-auto px-8">
+        <h2 class="text-2xl font-bold text-black mb-2">CSS Grid Utilities</h2>
+        <p class="mb-6">
+          <a href="https://github.com/tailwindcss/plugin-examples#css-grid-utilities" class="text-sm text-blue no-underline hover:underline">Learn more</a>
+          <span class="mx-1">&middot;</span>
+          <a href="https://github.com/tailwindcss/plugin-examples/blob/master/plugins/css-grid/index.js" class="text-sm text-blue no-underline hover:underline">View plugin source</a>
+        </p>
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-black mb-6">Auto-column sizes</h3>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-2</code>
+            <div class="grid grid-columns-2 h-16">
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-3</code>
+            <div class="grid grid-columns-3 h-16">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-4</code>
+            <div class="grid grid-columns-4 h-16">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-5</code>
+            <div class="grid grid-columns-5 h-16">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-6</code>
+            <div class="grid grid-columns-6 h-16">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-8</code>
+            <div class="grid grid-columns-8 h-16">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-10</code>
+            <div class="grid grid-columns-10 h-16">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-12</code>
+            <div class="grid grid-columns-12 h-16">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-black mb-6">Spanning multiple columns</h3>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-12</code>
+            <div class="grid grid-columns-12 h-16 mb-4">
+              <div class="col-span-8 p-4">
+                <code class="block text-grey-darker">.col-span-8</code>
+              </div>
+              <div class="col-span-4 p-4">
+                <code class="block text-grey-darkest">.col-span-4</code>
+              </div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-5</code>
+            <div class="grid grid-columns-5 h-16 mb-4">
+              <div class="col-span-2 p-4">
+                <code class="block text-grey-darker">.col-span-2</code>
+              </div>
+              <div class="col-span-3 p-4">
+                <code class="block text-grey-darkest">.col-span-3</code>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-black mb-6">Explicit start and end points</h3>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-12</code>
+            <div class="grid grid-columns-12 grid-dense h-16">
+              <div class="col-start-1 col-end-4 p-4">
+                <code class="block text-grey-darker">.col-start-1.col-end-4</code>
+              </div>
+              <div class="col-start-6 col-end-10 p-4">
+                <code class="block text-grey-darker">.col-start-6.col-end-10</code>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-black mb-6">Gutters</h3>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-3.grid-gap-0</code>
+            <div class="grid grid-columns-3 grid-gap-0 h-16 mb-4">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-3.grid-gap-4</code>
+            <div class="grid grid-columns-3 grid-gap-4 h-16 mb-4">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <code class="block mb-2 text-grey-dark">.grid.grid-columns-3.grid-gap-8</code>
+            <div class="grid grid-columns-3 grid-gap-8 h-16 mb-4">
+              <div class=""></div>
+              <div class=""></div>
+              <div class=""></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

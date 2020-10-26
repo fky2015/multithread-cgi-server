@@ -95,7 +95,13 @@ impl Worker {
 
             match message {
                 Message::NewJob(job) => {
+                    if cfg!(feature = "debug") {
+                        println!("Worker {} start to execute the job!", id);
+                    }
                     job();
+                    if cfg!(feature = "debug") {
+                        println!("Worker {} have executed the job!", id);
+                    }
                 }
                 Message::Terminate => {
                     println!("Worker {} was told to terminate.", id);
