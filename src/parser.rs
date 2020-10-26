@@ -20,8 +20,6 @@ pub struct Pkg {
 }
 
 pub fn parser(s: &[u8]) -> Pkg {
-    println!("{:?}", s);
-    //    let le = s.len();
     let mut host = String::new();
     let mut user = String::new();
     let mut path = String::new();

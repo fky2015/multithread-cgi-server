@@ -101,20 +101,16 @@ fn handle_connection(mut stream: TcpStream) -> String {
     let mut buffer = [0; 2048];
     stream.read(&mut buffer).unwrap();
 
-    // TODO: parse buffer to get file
     let b = parser::parser(&buffer);
-
-
-    println!("{:?}", b);
+    
     let response = if b.iscgi {
         let result = if b.method == "GET" {
-          cgi::cgi_caller_get(&b.path, &b.query_string) 
+            cgi::cgi_caller_get(&b.path, &b.query_string)
         } else {
             cgi::cgi_caller_post(&b.path, &b.content_length, &b.content_type, &b.body_string)
         };
 
         match result {
-
             Ok(content) => {
                 let status_line = "HTTP/1.1 200 OK";
                 format!("{}\r\n{}", status_line, content)
@@ -124,7 +120,6 @@ fn handle_connection(mut stream: TcpStream) -> String {
                 format!("{}", status_line)
             }
         }
-
     } else {
         let res = filereader::readfile(b.path.clone());
 
@@ -146,5 +141,8 @@ fn handle_connection(mut stream: TcpStream) -> String {
     stream.flush().unwrap();
 
     let time = chrono::Local::now().to_rfc3339();
-    format!("{} {} {} {} {} {} {}\n", time, b.host, b.method, b.user, b.url, b.path, b.query_string)
+    format!(
+        "{} {} {} {} {} {} {}\n",
+        time, b.host, b.method, b.user, b.url, b.path, b.query_string
+    )
 }

@@ -72,7 +72,10 @@ impl ThreadPool {
             println!("Shutting down worker {}", worker.id);
 
             if let Some(thread) = worker.thread.take() {
-                thread.join().unwrap();
+                match thread.join() {
+                    Ok(_) => {},
+                    Err(_) => {},
+                }
             }
         }
         self.sender = None;
