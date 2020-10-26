@@ -12,6 +12,7 @@ use std::sync::mpsc::RecvError;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread::spawn;
 
+mod cgi;
 mod filereader;
 mod parser;
 mod thread_pool;
@@ -108,20 +109,32 @@ fn handle_connection(mut stream: TcpStream) -> String {
     // TODO: parse buffer to get file
     let b = parser::parser(String::from_utf8_lossy(&buffer).to_string());
     println!("{:?}", b);
-    let res = filereader::readfile(b.path);
 
-    // TODO: handle read file or 404
-
-    let response = match res {
-        Some(res) => {
-            let status_line = "HTTP/1.1 200 OK";
-            let content_type = res.1;
-            let content = res.0;
-            format!("{}\r\n{}\r\n\r\n{}", status_line, content_type, content)
+    let response = if b.iscgi {
+        match cgi::cgi_caller_get(&b.path, &b.query_string) {
+            Ok(content) => {
+                let status_line = "HTTP/1.1 200 OK";
+                format!("{}\r\n{}", status_line, content)
+            }
+            _ => {
+                let status_line = "HTTP/1.1 404 Not Found";
+                format!("{}", status_line)
+            }
         }
-        _ => {
-            let status_line = "HTTP/1.1 404 Not Found";
-            format!("{}", status_line)
+    } else {
+        let res = filereader::readfile(b.path);
+
+        match res {
+            Some(res) => {
+                let status_line = "HTTP/1.1 200 OK";
+                let content_type = res.1;
+                let content = res.0;
+                format!("{}\r\n{}\r\n\r\n{}", status_line, content_type, content)
+            }
+            _ => {
+                let status_line = "HTTP/1.1 404 Not Found";
+                format!("{}", status_line)
+            }
         }
     };
 
