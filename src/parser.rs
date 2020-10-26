@@ -123,7 +123,7 @@ pub fn parser(s: String) -> Pkg {
 
 #[cfg(test)]
 mod parser_tests {
-    use crate::parser;
+    use crate::parser::parser;
 
     #[test]
     fn test1() {
