@@ -1,6 +1,8 @@
 
+use std::convert::TryInto;
 extern crate httparse;
 use httparse::Request;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct Pkg {
@@ -13,14 +15,14 @@ pub struct Pkg {
     pub content_length : String,
     pub content_type : String,
     pub body_string : String,
-    pub length : usize,
+    pub fore_string: String,
+    pub length : i32,
     pub iscgi : bool
 }
 
 pub fn parser (s : String) -> Pkg {
 
-    let le = s.len();
-
+//    let le = s.len();
     let mut host = String::new();
     let mut user = String::new();
     let mut path = String::new();
@@ -42,6 +44,8 @@ pub fn parser (s : String) -> Pkg {
         rpart = rpart + 1;
     }  
 
+//    content_length = (&mut body_string).len().to_string();
+
     let su = &fore_string.as_bytes();
     let mut headers = [httparse::EMPTY_HEADER; 16];
     let mut req = Request::new(&mut headers[..]);
@@ -57,15 +61,25 @@ pub fn parser (s : String) -> Pkg {
     let mut url = req.path.unwrap().to_string();
     let mut spliturl = url.split("?"); 
     let mut part = 0;
-    for su in spliturl {
-        if part == 0 {
-            path = su.to_string().chars().skip(1).collect();
+
+
+    if method == "GET" {
+        for surl in spliturl {
+            if part == 0 {
+                path = surl.to_string().chars().skip(1).collect();
+            }
+            else {
+                query_string = surl.to_string();
+            }
+            part = part + 1;
         }
-        else {
-            query_string = su.to_string();
-        }
-        part = part + 1;
     }
+    else if method == "POST" {
+        path = url.chars().skip(1).collect();
+        query_string = body_string.clone();
+    }
+
+    println!("{:?}", req.headers);
 
     let mut index = 0;
     while index < 16 {
@@ -88,7 +102,15 @@ pub fn parser (s : String) -> Pkg {
 
         index = index + 1;
     }
-    
+
+   let le = i32::from_str(&content_length).unwrap_or(0);
+ //   let le = from_str::<int>(content_length);
+    let mut body_string2 = String::new();
+
+    if le > 0 {
+        body_string2 = body_string.chars().take(le.try_into().unwrap()).collect();
+    }
+
     Pkg {
             method: method,
             host: host,
@@ -98,7 +120,8 @@ pub fn parser (s : String) -> Pkg {
             query_string: query_string,
             content_length: content_length,
             content_type: content_type,
-            body_string: body_string,
+            body_string: body_string2,
+            fore_string: fore_string,
             length: le,
             iscgi: iscgi
 
@@ -121,14 +144,18 @@ mod parser_tests {
 
     #[test]
     fn post1() {
-        let post1 = "POST /cgi-bin/calculator.py?value1=123&value2=234 HTTP/1.1\r\nHost: localhost:8000\r\nContent-Type:application/json\r\nContent-Length:200\r\nAccept:application/json\r\n\r\ntest body string";
+        let post1 = "POST /cgi-bin/calculator.py HTTP/1.1\r\nHost: localhost:8000\r\nContent-Type:application/json\r\nContent-Length:200\r\nAccept:application/json\r\n\r\nvalue1=123&value2=234";
         let query_string = "value1=123&value2=234";
         let path = "cgi-bin/calculator.py";
         let content_type = "application/json";
-        let body_string = "test body string";
+        let content_length = query_string.len().to_string();
+        let body_string = "value1=123&value2=234";
         let pkgp = parser(post1.to_string());
         assert_eq!(query_string, pkgp.query_string);
         assert_eq!(path, pkgp.path);
+        assert_eq!(content_type, pkgp.content_type);
+        assert_eq!(content_length, pkgp.content_length);
+        assert_eq!(body_string, pkgp.body_string);
     }
 
 
